@@ -50,6 +50,10 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 		}
 	}
 
+	/**
+	 * 容器初始化主入口
+	 * @throws Exception e
+	 */
 	@Override
 	protected void refresh() throws Exception {
 		/*
@@ -70,7 +74,7 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 	}
 
 	/**
-	 * 向容器注册，也就是添加到父类{@link WDefaultListableBeanFactory#beanDefinitionMap)}中。
+	 * 向容器注册，也就是添加到父类{@link WDefaultListableBeanFactory#beanDefinitionMap}中。
 	 * <p>
 	 * 在spring中会有多种不同的注册策略，需要提前分配。
 	 *
@@ -103,6 +107,13 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 	}
 
 
+	/**
+	 * 通过类获取一个实例，内部通过类名再调用{@link #getBean(String)}方法获取
+	 *
+	 * @param beanClass bean class
+	 * @return 在spring中通过反射将对象生成，并且使用{@link WBeanWrapper}进行装饰。
+	 * @throws Exception e
+	 */
 	@Override
 	public Object getBean(Class<?> beanClass) throws Exception {
 		return getBean(beanClass.getName());
@@ -123,26 +134,34 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 
 		WBeanDefinition beanDefinition = super.beanDefinitionMap.get(beanName);
 
-		WBeanPostProcessor postProcessor = new WBeanPostProcessor();
-
 		Object bean = instantiateBean(beanDefinition);
-
 		if (Objects.isNull(bean))return null;
 
+		WBeanPostProcessor postProcessor = new WBeanPostProcessor();
+		//初始化前置调用
 		postProcessor.postProcessorBeforeInitialization(bean, beanName);
-
 
 		WBeanWrapper wBeanWrapper = new WBeanWrapper();
 		wBeanWrapper.setWrappedInstance(bean);
 
+		//初始化猴子调用
 		postProcessor.postProcessorAfterInitialization(bean, beanName);
 
 		//DI的主要工作，根据类中的字段进行判断类型进行注入
+		//当前模式也就是bean在实例化后并没有进行依赖注入，只有在第一次调用时才会注入
 		populateBean(beanName, bean);
 
 		return this.factoryBeanInstanceCache.get(beanName).getWrappedInstance();
 	}
 
+	/**
+	 * DI（依赖注入）主要工作，主要就是判断当前的对象是否添加了注解
+	 * 对添加了注解的类获取其{@link Field}取到所有属性，并判断其是否使用了
+	 * {@link WAutowired}注解，是，则将其注入实例化后的bean，从{@link #factoryBeanInstanceCache}
+	 * 中获取。
+	 * @param beanName
+	 * @param bean
+	 */
 	private void populateBean(String beanName, Object bean) {
 		Class<?> beanClass = bean.getClass();
 		if (!beanClass.isAnnotationPresent(WController.class) || !beanClass.isAnnotationPresent(WService.class)){
