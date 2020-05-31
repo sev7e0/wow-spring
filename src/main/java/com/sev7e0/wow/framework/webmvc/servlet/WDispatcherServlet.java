@@ -1,5 +1,7 @@
 package com.sev7e0.wow.framework.webmvc.servlet;
 
+import com.sev7e0.wow.framework.annotation.WController;
+import com.sev7e0.wow.framework.annotation.WRequestMapping;
 import com.sev7e0.wow.framework.context.WApplicationContext;
 import com.sev7e0.wow.framework.webmvc.WHandlerMapping;
 
@@ -9,6 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -86,6 +89,57 @@ public class WDispatcherServlet extends HttpServlet {
 		initFlashMapManager(context);
 
 	}
+	private void initHandlerMappings(WApplicationContext context) {
+
+		String[] names = context.getBeanDefinitionNames();
+
+		try {
+			for (String name : names){
+				Object bean = context.getBean(name);
+				Class<?> beanClass = bean.getClass();
+
+				if (!beanClass.isAnnotationPresent(WController.class)) continue;
+
+				StringBuilder baseUrl = new StringBuilder();
+
+				if (beanClass.isAnnotationPresent(WRequestMapping.class)){
+					WRequestMapping requestMapping = beanClass.getAnnotation(WRequestMapping.class);
+					verifyPath(baseUrl, requestMapping.value());
+				}
+
+				Field[] beanClassFields = beanClass.getFields();
+
+				for (Field field : beanClassFields){
+					if (!field.isAnnotationPresent(WRequestMapping.class)) continue;
+					WRequestMapping requestMapping = field.getAnnotation(WRequestMapping.class);
+					verifyPath(baseUrl, requestMapping.value());
+				}
+
+
+			}
+		}catch (Exception e){
+
+		}
+
+	}
+
+	private void verifyPath(StringBuilder sb, String value){
+		if (sb.toString().endsWith("/")){
+			if (value.startsWith("/")){
+				String replaceFirst = value.replaceFirst("/", "");
+				sb.append(replaceFirst);
+			}else {
+				sb.append(value);
+			}
+		}else {
+			if (value.startsWith("/")){
+				sb.append(value);
+			}else {
+				sb.append("/").append(value);
+			}
+		}
+	}
+
 
 	private void initViewResolvers(WApplicationContext context) {
 
@@ -96,9 +150,7 @@ public class WDispatcherServlet extends HttpServlet {
 
 	}
 
-	private void initHandlerMappings(WApplicationContext context) {
 
-	}
 
 	private void initFlashMapManager(WApplicationContext context){
 

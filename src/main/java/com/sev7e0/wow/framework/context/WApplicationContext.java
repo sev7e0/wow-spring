@@ -143,6 +143,7 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 
 		WBeanWrapper wBeanWrapper = new WBeanWrapper();
 		wBeanWrapper.setWrappedInstance(bean);
+		this.factoryBeanInstanceCache.put(beanName, wBeanWrapper);
 
 		//初始化猴子调用
 		postProcessor.postProcessorAfterInitialization(bean, beanName);
@@ -212,6 +213,10 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 			this.factoryBeanObjectCache.put(beanClassName, instance);
 		}
 		return instance;
+	}
+
+	public String[] getBeanDefinitionNames(){
+		return this.beanDefinitionMap.keySet().toArray(new String[0]);
 	}
 
 	/**

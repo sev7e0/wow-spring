@@ -66,7 +66,7 @@ public class WBeanDefinitionReader {
 			} else if (file.getName().endsWith(".class")) {
 				String className = scan + "." + file.getName().replace(".class", "");
 				log.debug("Scan new class name: {}", className);
-				registryBeanClasses.add(className);
+				registryBeanClasses.add(className.replace("/", "."));
 			}
 		}
 	}
