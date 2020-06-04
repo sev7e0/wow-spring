@@ -11,6 +11,6 @@ package com.sev7e0.wow.web.service;
 
 public interface IWowService {
 
-	public String getWorld(String anything);
+	String getWorld(String anything);
 
 }

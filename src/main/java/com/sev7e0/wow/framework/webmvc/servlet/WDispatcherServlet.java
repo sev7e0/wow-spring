@@ -2,6 +2,7 @@ package com.sev7e0.wow.framework.webmvc.servlet;
 
 import com.sev7e0.wow.framework.annotation.WController;
 import com.sev7e0.wow.framework.annotation.WRequestMapping;
+import com.sev7e0.wow.framework.beans.WBeanWrapper;
 import com.sev7e0.wow.framework.context.WApplicationContext;
 import com.sev7e0.wow.framework.webmvc.*;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +32,7 @@ import java.util.regex.Pattern;
 @Slf4j
 public class WDispatcherServlet extends HttpServlet {
 
-	private final static String LOCATION = "contextConfigLocation";
+	private final static String LOCATION = "defaultConfig";
 	private final static String PATH_SEPARATOR = "/";
 
 	private final List<WHandlerMapping> handlerMappings = new ArrayList<>();
@@ -42,6 +43,7 @@ public class WDispatcherServlet extends HttpServlet {
 
 	private WApplicationContext context;
 
+	/*========================处理请求========================*/
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -49,67 +51,78 @@ public class WDispatcherServlet extends HttpServlet {
 	}
 
 	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
 
 		try {
 			doDispatch(req, resp);
 		} catch (Exception e) {
-			resp.getWriter().write("<h1>500 Exception</h1>");
+			try {
+				processDispatchResult(new WModelAndView("500",null), resp);
+			} catch (Exception exception) {
+				log.error("render 500 page error:{}",exception.getMessage());
+			}
 			e.printStackTrace();
 		}
 	}
 
-	private void doDispatch(HttpServletRequest request, HttpServletResponse response) throws Exception{
+	private void doDispatch(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
 		WHandlerMapping handler = getHandler(request);
 
-		if (Objects.isNull(handler)){
-			response.getWriter().write("<h1>404 Not Found</h1>");
+		if (Objects.isNull(handler)) {
+			try {
+				processDispatchResult(new WModelAndView("404",null), response);
+			} catch (Exception exception) {
+				log.error("render 404 page error:{}",exception.getMessage());
+			}
 			return;
 		}
 		WHandlerAdapter adapter = getHandlerAdapter(handler);
 		WModelAndView modelAndView = adapter.handler(request, response, handler);
 		//根据对象视图进行页面渲染
-		processDispatchResult(modelAndView, request, response);
+		processDispatchResult(modelAndView, response);
 
 	}
 
-	private void processDispatchResult(WModelAndView modelAndView, HttpServletRequest request, HttpServletResponse response) {
+	private void processDispatchResult(WModelAndView modelAndView, HttpServletResponse response) throws Exception {
 
-		if (Objects.isNull(modelAndView))return;
-		if (this.viewResolvers.isEmpty())return;
-		for (WViewResolver resolver : this.viewResolvers){
+		if (Objects.isNull(modelAndView)) return;
+		if (this.viewResolvers.isEmpty()) return;
+		for (WViewResolver resolver : this.viewResolvers) {
 			WView view = resolver.resolveViewName(modelAndView.getViewName(), null);
-			if (Objects.nonNull(view)){
-				view.render(modelAndView.getModel(), request, response);
+			if (Objects.nonNull(view)) {
+				view.render(modelAndView.getModel(), response);
 				return;
 			}
+			log.debug("No corresponding view found：{}", modelAndView.getViewName());
 		}
 	}
 
-	private WHandlerAdapter getHandlerAdapter(WHandlerMapping mapping){
+	private WHandlerAdapter getHandlerAdapter(WHandlerMapping mapping) {
 		if (this.handlerAdapters.isEmpty()) return null;
 		WHandlerAdapter handlerAdapter = this.handlerAdapters.get(mapping);
-		if (handlerAdapter.support(mapping)){
+		if (handlerAdapter.support(mapping)) {
 			return handlerAdapter;
 		}
 		return null;
 	}
+
 	/**
 	 * 根据url获取对应的handler
+	 *
 	 * @param request 请求
 	 * @return 对应的WHandlerMapping
 	 */
-	private WHandlerMapping getHandler(HttpServletRequest request){
+	private WHandlerMapping getHandler(HttpServletRequest request) {
 		if (this.handlerMappings.isEmpty()) return null;
 		String requestURI = request.getRequestURI();
 		String contextPath = request.getContextPath();
-		requestURI = requestURI.replace(contextPath, "").replace("/+", "/");
+		requestURI = requestURI.replaceFirst(contextPath, "").replace("/+", "/");
 
-		for (WHandlerMapping mapping : this.handlerMappings){
+		for (WHandlerMapping mapping : this.handlerMappings) {
 
 			Matcher matcher = mapping.getPattern().matcher(requestURI);
-			if (matcher.matches()){
+			if (matcher.matches()) {
 				return mapping;
 			}
 		}
@@ -118,7 +131,7 @@ public class WDispatcherServlet extends HttpServlet {
 	}
 
 
-	/*===================初始化相关========================*/
+	/*========================初始化相关========================*/
 
 	/**
 	 * 初始化方法，其主要工作就是将IoC容器初始化和mvc组件初始化
@@ -177,21 +190,19 @@ public class WDispatcherServlet extends HttpServlet {
 
 		try {
 			for (String name : names) {
-				Object bean = context.getBean(name);
-				//经过反射获取到类实例
-				Class<?> beanClass = bean.getClass();
+				WBeanWrapper beanWrapper = (WBeanWrapper) context.getBean(name);
 
 				//对没有添加`@WController`注解的不进行映射
-				if (!beanClass.isAnnotationPresent(WController.class)) continue;
+				if (!beanWrapper.getWrappedClass().isAnnotationPresent(WController.class)) continue;
 
 				StringBuilder baseUrl = new StringBuilder();
 
-				if (beanClass.isAnnotationPresent(WRequestMapping.class)) {
-					WRequestMapping requestMapping = beanClass.getAnnotation(WRequestMapping.class);
+				if (beanWrapper.getWrappedClass().isAnnotationPresent(WRequestMapping.class)) {
+					WRequestMapping requestMapping = beanWrapper.getWrappedClass().getAnnotation(WRequestMapping.class);
 					verifyPath(baseUrl, requestMapping.value());
 				}
 
-				Method[] beanClassFields = beanClass.getMethods();
+				Method[] beanClassFields = beanWrapper.getWrappedClass().getMethods();
 				//对内部方法进行判断
 				for (Method method : beanClassFields) {
 					//跳过没有使用注解的方法
@@ -201,7 +212,7 @@ public class WDispatcherServlet extends HttpServlet {
 					verifyPath(baseUrl, requestMapping.value());
 					String regex = baseUrl.toString().replace("\\*", ".*").replace("/+", "/");
 					Pattern compile = Pattern.compile(regex);
-					this.handlerMappings.add(new WHandlerMapping(beanClass, method, compile));
+					this.handlerMappings.add(new WHandlerMapping(beanWrapper.getWrappedInstance(), method, compile));
 				}
 
 
@@ -249,10 +260,12 @@ public class WDispatcherServlet extends HttpServlet {
 		Objects.requireNonNull(resource);
 		String fileString = resource.getFile();
 		File file = new File(fileString);
-
+		this.viewResolvers.add(new WViewResolver(file));
 		for (File template : Objects.requireNonNull(file.listFiles())) {
-			//
-			this.viewResolvers.add(new WViewResolver(template));
+			//遍历时只将资源文件夹进行解析保存，具体原因参看`WViewResolver.resolveViewName(String)`方法
+			if (template.isDirectory()) {
+				this.viewResolvers.add(new WViewResolver(template));
+			}
 		}
 
 

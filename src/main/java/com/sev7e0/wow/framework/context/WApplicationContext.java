@@ -6,6 +6,7 @@ import com.sev7e0.wow.framework.annotation.WService;
 import com.sev7e0.wow.framework.beans.WBeanWrapper;
 import com.sev7e0.wow.framework.beans.config.WBeanDefinition;
 import com.sev7e0.wow.framework.beans.config.WBeanPostProcessor;
+import com.sev7e0.wow.framework.beans.support.IWBeanDefinitionReader;
 import com.sev7e0.wow.framework.beans.support.WBeanDefinitionReader;
 import com.sev7e0.wow.framework.context.support.WDefaultListableBeanFactory;
 import com.sev7e0.wow.framework.core.WBeanFactory;
@@ -32,7 +33,7 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 
 	private final String[] configLocations;
 
-	private WBeanDefinitionReader beanDefinitionReader;
+	private IWBeanDefinitionReader beanDefinitionReader;
 
 	//用于缓存单例的IoC容器
 	private final Map<String, Object> factoryBeanObjectCache = new ConcurrentHashMap<>();
@@ -52,6 +53,7 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 
 	/**
 	 * 容器初始化主入口
+	 *
 	 * @throws Exception e
 	 */
 	@Override
@@ -135,7 +137,7 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 		WBeanDefinition beanDefinition = super.beanDefinitionMap.get(beanName);
 
 		Object bean = instantiateBean(beanDefinition);
-		if (Objects.isNull(bean))return null;
+		if (Objects.isNull(bean)) return null;
 
 		WBeanPostProcessor postProcessor = new WBeanPostProcessor();
 		//初始化前置调用
@@ -150,9 +152,9 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 
 		//DI的主要工作，根据类中的字段进行判断类型进行注入
 		//当前模式也就是bean在实例化后并没有进行依赖注入，只有在第一次调用时才会注入
-		populateBean(beanName, bean);
+		populateBean(bean);
 
-		return this.factoryBeanInstanceCache.get(beanName).getWrappedInstance();
+		return this.factoryBeanInstanceCache.get(beanName);
 	}
 
 	/**
@@ -160,36 +162,36 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 	 * 对添加了注解的类获取其{@link Field}取到所有属性，并判断其是否使用了
 	 * {@link WAutowired}注解，是，则将其注入实例化后的bean，从{@link #factoryBeanInstanceCache}
 	 * 中获取。
-	 * @param beanName
+	 *
 	 * @param bean
 	 */
-	private void populateBean(String beanName, Object bean) {
+	private void populateBean(Object bean) throws IllegalAccessException {
 		Class<?> beanClass = bean.getClass();
-		if (!beanClass.isAnnotationPresent(WController.class) || !beanClass.isAnnotationPresent(WService.class)){
-			return;
-		}
-		Field[] classFields = beanClass.getFields();
-		for (Field field : classFields){
-			if (field.isAnnotationPresent(WAutowired.class)){
-				WAutowired autowired = field.getAnnotation(WAutowired.class);
-				String fieldName = autowired.value().trim();
-				if ("".equals(fieldName)){
-					fieldName = field.getType().getName();
-				}
+		if (beanClass.isAnnotationPresent(WController.class) || beanClass.isAnnotationPresent(WService.class)) {
+			Field[] classFields = beanClass.getDeclaredFields();
+			for (Field field : classFields) {
 				field.setAccessible(true);
-				try {
-					field.set(bean, this.factoryBeanInstanceCache.get(fieldName).getWrappedInstance());
-				} catch (IllegalAccessException e) {
-					log.error("Dependency injection error：{}",e.getMessage());
-					e.printStackTrace();
+				//判断，如果其字段属性都已经不为null那么将不在进行注入
+				if (Objects.nonNull(field.get(bean))) return;
+				if (field.isAnnotationPresent(WAutowired.class)) {
+					WAutowired autowired = field.getAnnotation(WAutowired.class);
+					String fieldName = autowired.value().trim();
+					if ("".equals(fieldName)) {
+						fieldName = field.getName();
+					}
+
+					try {
+						field.set(bean, this.factoryBeanInstanceCache.get(fieldName).getWrappedInstance());
+					} catch (IllegalAccessException e) {
+						log.error("Dependency injection error：{}", e.getMessage());
+						e.printStackTrace();
+					}
 				}
 			}
 		}
-
 	}
 
 	/**
-	 *
 	 * @param beanDefinition
 	 * @return
 	 * @throws ClassNotFoundException
@@ -198,9 +200,9 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 		String beanClassName = beanDefinition.getBeanClassName();
 		Object instance = null;
 		//首先先从缓存中获取
-		if (this.factoryBeanObjectCache.containsKey(beanClassName)){
+		if (this.factoryBeanObjectCache.containsKey(beanClassName)) {
 			return this.factoryBeanObjectCache.get(beanClassName);
-		}else {
+		} else {
 			//如果缓存中没有该对象那么就反射出来一个
 			Class<?> beanClass = Class.forName(beanClassName);
 			try {
@@ -215,7 +217,7 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 		return instance;
 	}
 
-	public String[] getBeanDefinitionNames(){
+	public String[] getBeanDefinitionNames() {
 		return this.beanDefinitionMap.keySet().toArray(new String[0]);
 	}
 

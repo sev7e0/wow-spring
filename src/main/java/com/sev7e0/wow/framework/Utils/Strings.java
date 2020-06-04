@@ -1,4 +1,4 @@
-package com.sev7e0.wow.framework;
+package com.sev7e0.wow.framework.Utils;
 
 /**
  * Title:  Utils.java
@@ -18,11 +18,11 @@ public class Strings {
 	 * @param string 输入字符串
 	 * @return 为空false 不为空true
 	 */
-	public static boolean isEmpty(String string){
+	public static boolean isEmpty(String string) {
 		return !noEmpty(string);
 	}
 
-	public static boolean noEmpty(String string){
+	public static boolean noEmpty(String string) {
 		return string != null && !string.equals("");
 	}
 

@@ -35,7 +35,7 @@ public class WBeanWrapper {
 	 * @return 可能是Class，也可能是$Proxy0
 	 */
 	public Class<?> getWrappedClass() {
-		return this.wrappedInstance.getClass();
+		return this.wrappedClass;
 	}
 
 }

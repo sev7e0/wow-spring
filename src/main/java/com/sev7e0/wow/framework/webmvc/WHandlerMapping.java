@@ -1,8 +1,6 @@
 package com.sev7e0.wow.framework.webmvc;
 
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
 import java.util.regex.Pattern;
 
@@ -17,8 +15,11 @@ import java.util.regex.Pattern;
 
 public class WHandlerMapping {
 
+	//目标方法所在的对象
 	private Object controller;
+	//url对应的方法
 	private Method method;
+	//URL的封装
 	private Pattern pattern;
 
 	public WHandlerMapping(Object controller, Method method, Pattern pattern) {

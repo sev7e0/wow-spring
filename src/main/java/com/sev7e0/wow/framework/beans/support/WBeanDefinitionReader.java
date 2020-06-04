@@ -23,7 +23,7 @@ import java.util.Properties;
  **/
 
 @Slf4j
-public class WBeanDefinitionReader {
+public class WBeanDefinitionReader implements IWBeanDefinitionReader{
 
 	private final Properties properties = new Properties();
 
@@ -117,6 +117,7 @@ public class WBeanDefinitionReader {
 		WBeanDefinition beanDefinition = new WBeanDefinition();
 		beanDefinition.setBeanFactoryName(factoryBeanName);
 		beanDefinition.setBeanClassName(beanClassName);
+		//TODO 需要处理设置LazyInit属性
 		beanDefinition.setLazyInit(false);
 		return beanDefinition;
 	}

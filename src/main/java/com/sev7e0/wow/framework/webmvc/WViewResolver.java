@@ -1,6 +1,6 @@
 package com.sev7e0.wow.framework.webmvc;
 
-import com.sev7e0.wow.framework.Strings;
+import com.sev7e0.wow.framework.Utils.Strings;
 
 import java.io.File;
 import java.util.Locale;
@@ -26,15 +26,21 @@ public class WViewResolver {
 		this.templateRootDir = templateDir;
 	}
 
-
+	/**
+	 * 方法接收controller设置的视图名字，根据名字组装成完整的文件路径，再去读取文件
+	 * 如果文件存在且是标准的html文件，那么将其作为视图对象返回
+	 * @param viewName 视图名字
+	 * @param locale
+	 * @return 返回创建的WView对象
+	 */
 	public WView resolveViewName(String viewName, Locale locale) {
-
 		if (Strings.isEmpty(viewName)) return null;
-
 		String templateName = viewName.endsWith(DEFAULT_TEMPLATE_SUFFIX) ? viewName : viewName + DEFAULT_TEMPLATE_SUFFIX;
-
 		File file = new File((templateRootDir.getPath() + "/" + templateName).replace("/+", "/"));
-		return new WView(file);
+		if (file.exists() && file.isFile()) {
+			return new WView(file);
+		}
+		return null;
 	}
 
 }

@@ -1,5 +1,7 @@
 package com.sev7e0.wow.web.controller;
 
+import com.sev7e0.wow.framework.webmvc.WModelAndView;
+
 /**
  * Title:  IWowController.java
  * description: TODO
@@ -11,6 +13,6 @@ package com.sev7e0.wow.web.controller;
 
 public interface IWowController {
 
-	public String getWorld(String anything);
+	WModelAndView getWorld(String anything);
 
 }

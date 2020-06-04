@@ -4,7 +4,10 @@ import com.sev7e0.wow.framework.annotation.WAutowired;
 import com.sev7e0.wow.framework.annotation.WController;
 import com.sev7e0.wow.framework.annotation.WRequestMapping;
 import com.sev7e0.wow.framework.annotation.WRequestParam;
+import com.sev7e0.wow.framework.webmvc.WModelAndView;
 import com.sev7e0.wow.web.service.IWowService;
+
+import java.util.HashMap;
 
 /**
  * Title:  WController.java
@@ -17,14 +20,16 @@ import com.sev7e0.wow.web.service.IWowService;
 
 @WController
 @WRequestMapping(value = "/wow/")
-public class WowController implements IWowController{
+public class WowController implements IWowController {
 
 	@WAutowired
 	private IWowService wowService;
 
 	@Override
-	@WRequestMapping("getWorld")
-	public String getWorld(@WRequestParam("anything") String anything) {
-		return wowService.getWorld(anything);
+	@WRequestMapping("index.html")
+	public WModelAndView getWorld(@WRequestParam("anything") String anything) {
+		HashMap<String, Object> map = new HashMap<>();
+		map.put("data", wowService.getWorld(anything));
+		return new WModelAndView("index.html", map);
 	}
 }

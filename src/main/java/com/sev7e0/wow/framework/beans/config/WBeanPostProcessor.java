@@ -12,12 +12,12 @@ package com.sev7e0.wow.framework.beans.config;
 public class WBeanPostProcessor {
 
 
-	public Object postProcessorBeforeInitialization(Object bean, String beanName){
+	public Object postProcessorBeforeInitialization(Object bean, String beanName) {
 		return bean;
 	}
 
 
-	public Object postProcessorAfterInitialization(Object bean, String beanName){
+	public Object postProcessorAfterInitialization(Object bean, String beanName) {
 		return bean;
 	}
 }

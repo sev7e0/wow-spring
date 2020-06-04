@@ -12,10 +12,10 @@ import com.sev7e0.wow.framework.annotation.WService;
  **/
 
 @WService
-public class WowService implements IWowService{
+public class WowService implements IWowService {
 
 	@Override
 	public String getWorld(String anything) {
-		return null;
+		return "今天不学习，明天变辣鸡！" + "\r传参为："+anything;
 	}
 }

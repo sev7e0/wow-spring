@@ -1,1 +1,3 @@
-getW
+
+###
+GET http://localhost:8080/wow/wow/index.html?anything=111

@@ -1,4 +1,4 @@
-import com.sev7e0.wow.framework.Strings;
+import com.sev7e0.wow.framework.Utils.Strings;
 import org.junit.Assert;
 import org.junit.Test;
 
