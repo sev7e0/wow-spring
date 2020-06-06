@@ -1,4 +1,4 @@
-package com.sev7e0.wow.framework.Utils;
+package com.sev7e0.wow.framework.utils;
 
 /**
  * Title:  Utils.java

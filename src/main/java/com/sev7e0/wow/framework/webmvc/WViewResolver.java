@@ -1,6 +1,6 @@
 package com.sev7e0.wow.framework.webmvc;
 
-import com.sev7e0.wow.framework.Utils.Strings;
+import com.sev7e0.wow.framework.utils.Strings;
 
 import java.io.File;
 import java.util.Locale;
