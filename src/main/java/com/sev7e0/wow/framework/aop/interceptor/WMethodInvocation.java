@@ -83,6 +83,7 @@ public class WMethodInvocation implements WJoinPoint {
 	public Object proceed() throws Throwable {
 		int index = 0;
 
+		//如果拦截器链为空，那么说明方法无需增强，直接反射调用原方法
 		if (this.objectList.isEmpty()){
 			return method.invoke(this.target, this.args);
 		}

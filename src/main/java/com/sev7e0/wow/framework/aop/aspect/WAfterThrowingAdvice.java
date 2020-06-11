@@ -16,14 +16,17 @@ import java.lang.reflect.Method;
 
 public class WAfterThrowingAdvice extends WAbstractAspectAdvice implements WAdvice, WMethodInterceptor {
 
-	private WJoinPoint joinPoint;
-
 	public WAfterThrowingAdvice(Method method, Object target) {
 		super(method, target);
 	}
 
 	@Override
 	public Object invoke(WMethodInvocation methodInvocation) throws Throwable {
-		return null;
+		try {
+			return methodInvocation.proceed();
+		}catch (Throwable throwable){
+			invokeAdviceMethod(methodInvocation,null, throwable);
+			throw throwable;
+		}
 	}
 }

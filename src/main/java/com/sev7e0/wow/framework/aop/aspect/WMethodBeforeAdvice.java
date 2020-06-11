@@ -2,6 +2,7 @@ package com.sev7e0.wow.framework.aop.aspect;
 
 import com.sev7e0.wow.framework.aop.interceptor.WMethodInterceptor;
 import com.sev7e0.wow.framework.aop.interceptor.WMethodInvocation;
+import lombok.SneakyThrows;
 
 import java.lang.reflect.Method;
 
@@ -21,12 +22,22 @@ public class WMethodBeforeAdvice extends WAbstractAspectAdvice implements WAdvic
 		super(method, target);
 	}
 
-	public void before(Method method, Object[] args, Object target){
-
+	@SneakyThrows
+	public void before(Method method, Object[] args, Object target) {
+		//调用模板方法
+		invokeAdviceMethod(this.joinPoint, null, null);
 	}
 
+	/**
+	 *
+	 * @param methodInvocation
+	 * @return
+	 * @throws Throwable
+	 */
 	@Override
 	public Object invoke(WMethodInvocation methodInvocation) throws Throwable {
-		return null;
+		this.joinPoint = methodInvocation;
+		this.before(methodInvocation.getMethod(), methodInvocation.getArguments(), methodInvocation.getThis());
+		return methodInvocation.proceed();
 	}
 }

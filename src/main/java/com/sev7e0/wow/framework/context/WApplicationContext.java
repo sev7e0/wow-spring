@@ -3,6 +3,11 @@ package com.sev7e0.wow.framework.context;
 import com.sev7e0.wow.framework.annotation.WAutowired;
 import com.sev7e0.wow.framework.annotation.WController;
 import com.sev7e0.wow.framework.annotation.WService;
+import com.sev7e0.wow.framework.aop.proxy.WAopProxy;
+import com.sev7e0.wow.framework.aop.proxy.WCGlibAopProxy;
+import com.sev7e0.wow.framework.aop.proxy.WJdkAopProxy;
+import com.sev7e0.wow.framework.aop.support.WAdvisedSupport;
+import com.sev7e0.wow.framework.aop.support.WAopConfig;
 import com.sev7e0.wow.framework.beans.WBeanWrapper;
 import com.sev7e0.wow.framework.beans.config.WBeanDefinition;
 import com.sev7e0.wow.framework.beans.config.WBeanPostProcessor;
@@ -207,7 +212,13 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 			Class<?> beanClass = Class.forName(beanClassName);
 			try {
 				instance = beanClass.newInstance();
-			} catch (InstantiationException | IllegalAccessException e) {
+				WAdvisedSupport advisedSupport = initAopConfig(beanDefinition);
+				advisedSupport.setTarget(instance);
+				advisedSupport.setTargetClass(beanClass);
+				if (advisedSupport.pointCutMatch()){
+					instance = createProxy(advisedSupport).getProxy();
+				}
+			} catch (Exception e) {
 				log.error("Get new instance error: {}", e.getMessage());
 				e.printStackTrace();
 			}
@@ -215,6 +226,34 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 			this.factoryBeanObjectCache.put(beanClassName, instance);
 		}
 		return instance;
+	}
+
+	/**
+	 * 基于不同
+	 * @param config
+	 * @return
+	 */
+	private WAopProxy createProxy(WAdvisedSupport config) {
+		Class<?> targetClass = config.getTargetClass();
+		//如果使用实现接口的方式，那么使用jdk代理
+		if (targetClass.getInterfaces().length > 0){
+			return new WJdkAopProxy(config);
+		}else {
+			//没有采用实现接口，那么将采用CGlib
+			return new WCGlibAopProxy(config);
+		}
+	}
+
+	/**
+	 * 未完成，初始化配置
+	 * @param definition
+	 * @return
+	 * @throws Exception
+	 */
+	private WAdvisedSupport initAopConfig(WBeanDefinition definition) throws Exception{
+		WAopConfig aopConfig = new WAopConfig();
+//		aopConfig.setPointCut();
+		return new WAdvisedSupport(aopConfig);
 	}
 
 	public String[] getBeanDefinitionNames() {

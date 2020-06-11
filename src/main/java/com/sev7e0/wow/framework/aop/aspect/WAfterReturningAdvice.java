@@ -16,6 +16,7 @@ import java.lang.reflect.Method;
 
 public class WAfterReturningAdvice extends WAbstractAspectAdvice implements WAdvice, WMethodInterceptor {
 
+	private WJoinPoint joinPoint;
 
 	public WAfterReturningAdvice(Method method, Object target) {
 		super(method, target);
@@ -23,6 +24,17 @@ public class WAfterReturningAdvice extends WAbstractAspectAdvice implements WAdv
 
 	@Override
 	public Object invoke(WMethodInvocation methodInvocation) throws Throwable {
-		return null;
+		Object returnV = methodInvocation.proceed();
+		this.joinPoint = methodInvocation;
+		this.afterReturning(returnV, joinPoint.getMethod(), joinPoint.getArguments(), joinPoint.getThis());
+		return returnV;
+	}
+
+	public void afterReturning(Object returnValue, Method method, Object[] args, Object target) {
+		try {
+			invokeAdviceMethod(this.joinPoint, returnValue, null);
+		} catch (Throwable throwable) {
+			throwable.printStackTrace();
+		}
 	}
 }

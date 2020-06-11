@@ -13,16 +13,38 @@ import java.lang.reflect.Method;
 
 public class WAbstractAspectAdvice {
 
-	private Method method;
-	private Object target;
+	private final Method method;
+	private final Object target;
 
 	public WAbstractAspectAdvice(Method method, Object target) {
 		this.method = method;
 		this.target = target;
 	}
 
-	protected Object invokeAdviceMethod(WJoinPoint joinPoint, Object returnValue, Throwable throwable) throws Throwable{
-		return null;
+	/**
+	 * 模板方法
+	 * @param joinPoint
+	 * @param returnValue
+	 * @param throwable
+	 * @throws Throwable
+	 */
+	protected void invokeAdviceMethod(WJoinPoint joinPoint, Object returnValue, Throwable throwable) throws Throwable {
+		Class<?>[] parameterTypes = this.method.getParameterTypes();
+		if (parameterTypes.length == 0) {
+			method.invoke(target);
+			return;
+		}
+		Object[] objects = new Object[parameterTypes.length];
+		for (int i = 0; i < parameterTypes.length; i++) {
+			if (parameterTypes[i] == WJoinPoint.class) {
+				objects[i] = joinPoint;
+			} else if (parameterTypes[i] == Throwable.class) {
+				objects[i] = throwable;
+			} else if (parameterTypes[i] == Object.class) {
+				objects[i] = returnValue;
+			}
+		}
+		method.invoke(target, objects);
 	}
 
 }
