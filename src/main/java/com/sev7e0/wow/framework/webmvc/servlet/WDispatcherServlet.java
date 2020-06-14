@@ -57,9 +57,9 @@ public class WDispatcherServlet extends HttpServlet {
 			doDispatch(req, resp);
 		} catch (Exception e) {
 			try {
-				processDispatchResult(new WModelAndView("500",null), resp);
+				processDispatchResult(new WModelAndView("500", null), resp);
 			} catch (Exception exception) {
-				log.error("render 500 page error:{}",exception.getMessage());
+				log.error("render 500 page error:{}", exception.getMessage());
 			}
 			e.printStackTrace();
 		}
@@ -71,9 +71,9 @@ public class WDispatcherServlet extends HttpServlet {
 
 		if (Objects.isNull(handler)) {
 			try {
-				processDispatchResult(new WModelAndView("404",null), response);
+				processDispatchResult(new WModelAndView("404", null), response);
 			} catch (Exception exception) {
-				log.error("render 404 page error:{}",exception.getMessage());
+				log.error("render 404 page error:{}", exception.getMessage());
 			}
 			return;
 		}
@@ -205,12 +205,13 @@ public class WDispatcherServlet extends HttpServlet {
 				Method[] beanClassFields = beanWrapper.getWrappedClass().getMethods();
 				//对内部方法进行判断
 				for (Method method : beanClassFields) {
+					StringBuilder builder = new StringBuilder(baseUrl);
 					//跳过没有使用注解的方法
 					if (!method.isAnnotationPresent(WRequestMapping.class)) continue;
 
 					WRequestMapping requestMapping = method.getAnnotation(WRequestMapping.class);
-					verifyPath(baseUrl, requestMapping.value());
-					String regex = baseUrl.toString().replace("\\*", ".*").replace("/+", "/");
+					verifyPath(builder, requestMapping.value());
+					String regex = builder.toString().replace("\\*", ".*").replace("/+", "/");
 					Pattern compile = Pattern.compile(regex);
 					this.handlerMappings.add(new WHandlerMapping(beanWrapper.getWrappedInstance(), method, compile));
 				}

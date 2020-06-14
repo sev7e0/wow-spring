@@ -16,6 +16,11 @@ public class WowService implements IWowService {
 
 	@Override
 	public String getWorld(String anything) {
-		return "今天不学习，明天变辣鸡！" + "\r传参为："+anything;
+		return "今天不学习，明天变辣鸡！" + "\r传参为：" + anything;
+	}
+
+	@Override
+	public void getException() throws RuntimeException {
+		throw new RuntimeException("抛出异常啦！");
 	}
 }

@@ -4,6 +4,7 @@ import com.sev7e0.wow.framework.aop.interceptor.WMethodInvocation;
 import com.sev7e0.wow.framework.aop.support.WAdvisedSupport;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.List;
  **/
 
 public class WJdkAopProxy implements WAopProxy, InvocationHandler {
-	private WAdvisedSupport config;
+	private final WAdvisedSupport config;
 
 	public WJdkAopProxy(WAdvisedSupport config) {
 		this.config = config;
@@ -36,8 +37,13 @@ public class WJdkAopProxy implements WAopProxy, InvocationHandler {
 
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		List<Object> objectList = config.getInterceptorAndDynamicInterceptionAdvice(method, config.getTargetClass());
-		WMethodInvocation invocation = new WMethodInvocation(proxy, this.config.getTarget(), method, args, config.getTargetClass(), objectList);
-		return invocation.proceed();
+		List<Object> matchersList = config.getInterceptorAndDynamicInterceptionAdvice(method, config.getTargetClass());
+		WMethodInvocation invocation = new WMethodInvocation(proxy, this.config.getTarget(), method, args, config.getTargetClass(), matchersList);
+		try {
+			return invocation.proceed();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

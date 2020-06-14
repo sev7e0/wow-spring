@@ -32,4 +32,11 @@ public class WowController implements IWowController {
 		map.put("data", wowService.getWorld(anything));
 		return new WModelAndView("index.html", map);
 	}
+
+	@Override
+	@WRequestMapping("getException.html")
+	public WModelAndView getException() {
+		wowService.getException();
+		return new WModelAndView("500.html", null);
+	}
 }

@@ -13,4 +13,5 @@ public interface IWowService {
 
 	String getWorld(String anything);
 
+	void getException() throws RuntimeException;
 }

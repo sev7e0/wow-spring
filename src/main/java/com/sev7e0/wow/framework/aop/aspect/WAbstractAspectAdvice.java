@@ -23,6 +23,7 @@ public class WAbstractAspectAdvice {
 
 	/**
 	 * 模板方法
+	 *
 	 * @param joinPoint
 	 * @param returnValue
 	 * @param throwable
@@ -34,6 +35,7 @@ public class WAbstractAspectAdvice {
 			method.invoke(target);
 			return;
 		}
+		//构造反射所需要的参数
 		Object[] objects = new Object[parameterTypes.length];
 		for (int i = 0; i < parameterTypes.length; i++) {
 			if (parameterTypes[i] == WJoinPoint.class) {

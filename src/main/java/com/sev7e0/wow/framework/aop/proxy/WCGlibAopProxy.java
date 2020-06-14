@@ -13,7 +13,7 @@ import com.sev7e0.wow.framework.aop.support.WAdvisedSupport;
 
 public class WCGlibAopProxy implements WAopProxy {
 
-	private WAdvisedSupport config;
+	private final WAdvisedSupport config;
 
 	public WCGlibAopProxy(WAdvisedSupport config) {
 		this.config = config;

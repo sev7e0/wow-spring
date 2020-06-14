@@ -14,18 +14,24 @@ import java.lang.reflect.Method;
  * @since 2020-06-07 18:29
  **/
 
-public class WAfterThrowingAdvice extends WAbstractAspectAdvice implements WAdvice, WMethodInterceptor {
+public class WMethodAfterThrowingAdvice extends WAbstractAspectAdvice implements WAdvice, WMethodInterceptor {
 
-	public WAfterThrowingAdvice(Method method, Object target) {
+	private String throwName;
+
+	public WMethodAfterThrowingAdvice(Method method, Object target) {
 		super(method, target);
+	}
+
+	public void setThrowName(String throwName) {
+		this.throwName = throwName;
 	}
 
 	@Override
 	public Object invoke(WMethodInvocation methodInvocation) throws Throwable {
 		try {
 			return methodInvocation.proceed();
-		}catch (Throwable throwable){
-			invokeAdviceMethod(methodInvocation,null, throwable);
+		} catch (Throwable throwable) {
+			invokeAdviceMethod(methodInvocation, null, throwable);
 			throw throwable;
 		}
 	}

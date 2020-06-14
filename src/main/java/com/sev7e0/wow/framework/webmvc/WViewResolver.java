@@ -29,6 +29,7 @@ public class WViewResolver {
 	/**
 	 * 方法接收controller设置的视图名字，根据名字组装成完整的文件路径，再去读取文件
 	 * 如果文件存在且是标准的html文件，那么将其作为视图对象返回
+	 *
 	 * @param viewName 视图名字
 	 * @param locale
 	 * @return 返回创建的WView对象

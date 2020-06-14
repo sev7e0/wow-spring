@@ -15,4 +15,6 @@ public interface IWowController {
 
 	WModelAndView getWorld(String anything);
 
+	WModelAndView getException();
+
 }

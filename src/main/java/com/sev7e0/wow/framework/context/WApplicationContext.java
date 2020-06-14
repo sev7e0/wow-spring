@@ -212,10 +212,8 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 			Class<?> beanClass = Class.forName(beanClassName);
 			try {
 				instance = beanClass.newInstance();
-				WAdvisedSupport advisedSupport = initAopConfig(beanDefinition);
-				advisedSupport.setTarget(instance);
-				advisedSupport.setTargetClass(beanClass);
-				if (advisedSupport.pointCutMatch()){
+				WAdvisedSupport advisedSupport = initAopConfig(instance, beanClass);
+				if (advisedSupport.pointCutMatch()) {
 					instance = createProxy(advisedSupport).getProxy();
 				}
 			} catch (Exception e) {
@@ -230,15 +228,16 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 
 	/**
 	 * 基于不同
+	 *
 	 * @param config
 	 * @return
 	 */
 	private WAopProxy createProxy(WAdvisedSupport config) {
 		Class<?> targetClass = config.getTargetClass();
 		//如果使用实现接口的方式，那么使用jdk代理
-		if (targetClass.getInterfaces().length > 0){
+		if (targetClass.getInterfaces().length > 0) {
 			return new WJdkAopProxy(config);
-		}else {
+		} else {
 			//没有采用实现接口，那么将采用CGlib
 			return new WCGlibAopProxy(config);
 		}
@@ -246,14 +245,21 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 
 	/**
 	 * 未完成，初始化配置
-	 * @param definition
+	 *
+	 * @param instance
+	 * @param beanClass
 	 * @return
 	 * @throws Exception
 	 */
-	private WAdvisedSupport initAopConfig(WBeanDefinition definition) throws Exception{
+	private WAdvisedSupport initAopConfig(Object instance, Class<?> beanClass) throws Exception {
 		WAopConfig aopConfig = new WAopConfig();
-//		aopConfig.setPointCut();
-		return new WAdvisedSupport(aopConfig);
+		aopConfig.setPointCut(beanDefinitionReader.getProperties().getProperty("pointCut"));
+		aopConfig.setAspectAfter(beanDefinitionReader.getProperties().getProperty("aspectAfter"));
+		aopConfig.setAspectAfterThrowName(beanDefinitionReader.getProperties().getProperty("afterThrowName"));
+		aopConfig.setAspectBefore(beanDefinitionReader.getProperties().getProperty("aspectBefore"));
+		aopConfig.setAspectClass(beanDefinitionReader.getProperties().getProperty("aspectClass"));
+		aopConfig.setAspectThrow(beanDefinitionReader.getProperties().getProperty("afterThrow"));
+		return new WAdvisedSupport(aopConfig, instance, beanClass);
 	}
 
 	public String[] getBeanDefinitionNames() {

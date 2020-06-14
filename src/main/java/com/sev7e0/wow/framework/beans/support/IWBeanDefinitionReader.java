@@ -16,7 +16,7 @@ import java.util.Properties;
 
 public interface IWBeanDefinitionReader {
 
-	public List<WBeanDefinition> loadBeanDefinitions();
+	List<WBeanDefinition> loadBeanDefinitions();
 
-	public Properties getProperties();
+	Properties getProperties();
 }

@@ -13,12 +13,14 @@ public interface WAopProxy {
 
 	/**
 	 * 获取一个代理对象
+	 *
 	 * @return 获得代理对象
 	 */
 	Object getProxy();
 
 	/**
 	 * 定过自定义类加载气获取代理对象
+	 *
 	 * @param classLoader 自定义类加载器
 	 * @return 代理对象
 	 */

@@ -19,24 +19,24 @@ import java.util.Objects;
 
 public class WMethodInvocation implements WJoinPoint {
 
-	private Object proxy;
-	private Object target;
-	private Method method;
-	private Object[] args;
-	private Class<?> targetClass;
-	private List<Object> objectList;
+	private final Object proxy;
+	private final Object target;
+	private final Method method;
+	private final Object[] args;
+	private final Class<?> targetClass;
+	private final List<Object> matchersList;
 
 	private Map<String, Object> customAttribute;
 
 
-	public WMethodInvocation(Object proxy, Object target, Method method, Object[] args, Class<?> targetClass, List<Object> objectList) {
+	public WMethodInvocation(Object proxy, Object target, Method method, Object[] args, Class<?> targetClass, List<Object> matchersList) {
 
 		this.proxy = proxy;
 		this.target = target;
 		this.method = method;
 		this.args = args;
 		this.targetClass = targetClass;
-		this.objectList = objectList;
+		this.matchersList = matchersList;
 	}
 
 	@Override
@@ -56,13 +56,13 @@ public class WMethodInvocation implements WJoinPoint {
 
 	@Override
 	public void setUserAttribute(String key, Object value) {
-		if (Objects.nonNull(value)){
-			if (Objects.isNull(customAttribute)){
+		if (Objects.nonNull(value)) {
+			if (Objects.isNull(customAttribute)) {
 				customAttribute = new HashMap<>();
 			}
 			customAttribute.put(key, value);
-		}else {
-			if (Objects.nonNull(customAttribute)){
+		} else {
+			if (Objects.nonNull(customAttribute)) {
 				customAttribute.remove(key);
 			}
 		}
@@ -75,23 +75,26 @@ public class WMethodInvocation implements WJoinPoint {
 		return null;
 	}
 
+	private int currentInterceptorIndex = -1;
+
 	/**
-	 *
 	 * @return
 	 * @throws Throwable
 	 */
 	public Object proceed() throws Throwable {
-		int index = 0;
-
-		//如果拦截器链为空，那么说明方法无需增强，直接反射调用原方法
-		if (this.objectList.isEmpty()){
-			return method.invoke(this.target, this.args);
+		//如果Interceptor执行完了，则执行joinPoint
+		if (this.currentInterceptorIndex == this.matchersList.size() - 1) {
+			return this.method.invoke(this.target, this.args);
 		}
-		Object advice = this.objectList.get(index);
-		if (advice instanceof WMethodInterceptor){
-			WMethodInterceptor interceptor = (WMethodInterceptor) advice;
-			return interceptor.invoke(this);
-		}else {
+
+		Object interceptorOrInterceptionAdvice = this.matchersList.get(++this.currentInterceptorIndex);
+		//如果要动态匹配joinPoint
+		if (Objects.nonNull(interceptorOrInterceptionAdvice)
+			&& interceptorOrInterceptionAdvice instanceof WMethodInterceptor) {
+			WMethodInterceptor mi = (WMethodInterceptor) interceptorOrInterceptionAdvice;
+			return mi.invoke(this);
+		} else {
+			//动态匹配失败时,略过当前Intercetpor,调用下 一个Interceptor
 			return proceed();
 		}
 	}

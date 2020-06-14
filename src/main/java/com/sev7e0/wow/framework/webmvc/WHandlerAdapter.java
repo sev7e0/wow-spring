@@ -1,7 +1,7 @@
 package com.sev7e0.wow.framework.webmvc;
 
-import com.sev7e0.wow.framework.utils.Strings;
 import com.sev7e0.wow.framework.annotation.WRequestParam;
+import com.sev7e0.wow.framework.utils.Strings;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

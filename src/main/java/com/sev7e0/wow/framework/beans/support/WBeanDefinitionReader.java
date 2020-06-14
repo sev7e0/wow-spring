@@ -23,7 +23,7 @@ import java.util.Properties;
  **/
 
 @Slf4j
-public class WBeanDefinitionReader implements IWBeanDefinitionReader{
+public class WBeanDefinitionReader implements IWBeanDefinitionReader {
 
 	private final Properties properties = new Properties();
 

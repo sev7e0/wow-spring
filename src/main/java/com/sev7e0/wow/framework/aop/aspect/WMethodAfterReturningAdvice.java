@@ -14,11 +14,11 @@ import java.lang.reflect.Method;
  * @since 2020-06-07 18:28
  **/
 
-public class WAfterReturningAdvice extends WAbstractAspectAdvice implements WAdvice, WMethodInterceptor {
+public class WMethodAfterReturningAdvice extends WAbstractAspectAdvice implements WAdvice, WMethodInterceptor {
 
 	private WJoinPoint joinPoint;
 
-	public WAfterReturningAdvice(Method method, Object target) {
+	public WMethodAfterReturningAdvice(Method method, Object target) {
 		super(method, target);
 	}
 

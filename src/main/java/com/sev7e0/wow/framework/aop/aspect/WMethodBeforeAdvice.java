@@ -29,7 +29,6 @@ public class WMethodBeforeAdvice extends WAbstractAspectAdvice implements WAdvic
 	}
 
 	/**
-	 *
 	 * @param methodInvocation
 	 * @return
 	 * @throws Throwable
