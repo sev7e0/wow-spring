@@ -30,7 +30,6 @@ public class WMethodInvocation implements WJoinPoint {
 
 
 	public WMethodInvocation(Object proxy, Object target, Method method, Object[] args, Class<?> targetClass, List<Object> matchersList) {
-
 		this.proxy = proxy;
 		this.target = target;
 		this.method = method;
@@ -82,7 +81,7 @@ public class WMethodInvocation implements WJoinPoint {
 	 * @throws Throwable
 	 */
 	public Object proceed() throws Throwable {
-		//如果Interceptor执行完了，则执行joinPoint
+		//如果拦截器链为空，或者已经完成了那么直接反射调用方法
 		if (this.currentInterceptorIndex == this.matchersList.size() - 1) {
 			return this.method.invoke(this.target, this.args);
 		}

@@ -155,7 +155,6 @@ public class WDispatcherServlet extends HttpServlet {
 	 * @param context
 	 */
 	private void initStrategies(WApplicationContext context) {
-		//每一种都是一种单独的策略
 		initMultipartResolver(context);
 
 		initLocalResolver(context);

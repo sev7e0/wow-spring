@@ -1,6 +1,7 @@
 package com.sev7e0.wow.framework.beans.support;
 
 import com.sev7e0.wow.framework.beans.config.WBeanDefinition;
+import com.sev7e0.wow.framework.utils.ArrayUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -27,7 +28,10 @@ public class WBeanDefinitionReader implements IWBeanDefinitionReader {
 
 	private final Properties properties = new Properties();
 
+	//等待被注册的class集合
 	private final List<String> registryBeanClasses = new ArrayList<>();
+
+	private final static String DEFAULT_LOCATION = "classpath:application.properties";
 
 	/**
 	 * 提供一个参数为数组的构造方法，不过当前仅支持一种类型的配置文件，
@@ -36,7 +40,10 @@ public class WBeanDefinitionReader implements IWBeanDefinitionReader {
 	 * @param locations 文件位置数组，当前默认取第一个
 	 */
 	public WBeanDefinitionReader(String... locations) {
-		try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(locations[0].replace("classpath:", ""))) {
+		String location = ArrayUtils.isEmpty(locations) ? DEFAULT_LOCATION : locations[0];
+		String replace = location.replace("classpath:", "");
+		try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(replace)) {
+			log.info("prepare load config file: {}.", replace);
 			properties.load(inputStream);
 		} catch (IOException e) {
 			log.error("read config file error: {}", e.getMessage());
@@ -53,10 +60,10 @@ public class WBeanDefinitionReader implements IWBeanDefinitionReader {
 	 * @param scan 要扫描的路径，当前不支持多个路径
 	 */
 	private void scanPackage(String scan) {
-		Objects.requireNonNull(scan);
+		Objects.requireNonNull(scan, "`scanPackage` must not be null!");
 		String scanPath = scan.replace(".", "/");
 		URL resource = this.getClass().getClassLoader().getResource(scanPath);
-		Objects.requireNonNull(resource);
+		Objects.requireNonNull(resource, "");
 		File classFile = new File(resource.getFile());
 		File[] files = classFile.listFiles();
 		Objects.requireNonNull(files);
@@ -99,7 +106,7 @@ public class WBeanDefinitionReader implements IWBeanDefinitionReader {
 					beanDefinitions.add(doCreateBeanDefinition(toLowerFirstCase(interfaceName.getSimpleName()), className));
 				}
 			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
+				log.error("class: {} not found.", className, e);
 			}
 		}
 		return beanDefinitions;

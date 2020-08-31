@@ -37,6 +37,7 @@ public class WJdkAopProxy implements WAopProxy, InvocationHandler {
 
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+		//获取拦截器链
 		List<Object> matchersList = config.getInterceptorAndDynamicInterceptionAdvice(method, config.getTargetClass());
 		WMethodInvocation invocation = new WMethodInvocation(proxy, this.config.getTarget(), method, args, config.getTargetClass(), matchersList);
 		try {

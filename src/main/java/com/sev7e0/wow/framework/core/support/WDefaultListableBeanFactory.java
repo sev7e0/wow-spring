@@ -1,7 +1,6 @@
-package com.sev7e0.wow.framework.context.support;
+package com.sev7e0.wow.framework.core.support;
 
 import com.sev7e0.wow.framework.beans.config.WBeanDefinition;
-import com.sev7e0.wow.framework.context.WAbstractApplicationContext;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -17,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 2020-05-27 23:13
  **/
 
-public class WDefaultListableBeanFactory extends WAbstractApplicationContext {
+public class WDefaultListableBeanFactory extends WAbstractCapableBeanFactory {
 
 	/**
 	 * 基于WBeanDefinition映射表

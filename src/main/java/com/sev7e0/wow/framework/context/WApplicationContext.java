@@ -10,11 +10,11 @@ import com.sev7e0.wow.framework.aop.support.WAdvisedSupport;
 import com.sev7e0.wow.framework.aop.support.WAopConfig;
 import com.sev7e0.wow.framework.beans.WBeanWrapper;
 import com.sev7e0.wow.framework.beans.config.WBeanDefinition;
-import com.sev7e0.wow.framework.beans.config.WBeanPostProcessor;
 import com.sev7e0.wow.framework.beans.support.IWBeanDefinitionReader;
 import com.sev7e0.wow.framework.beans.support.WBeanDefinitionReader;
-import com.sev7e0.wow.framework.context.support.WDefaultListableBeanFactory;
+import com.sev7e0.wow.framework.context.support.WAbstractApplicationContext;
 import com.sev7e0.wow.framework.core.WBeanFactory;
+import com.sev7e0.wow.framework.core.support.WDefaultListableBeanFactory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 
 @Slf4j
-public class WApplicationContext extends WDefaultListableBeanFactory implements WBeanFactory {
+public class WApplicationContext extends WAbstractApplicationContext implements WBeanFactory {
 
 	private final String[] configLocations;
 
@@ -143,17 +143,9 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 
 		Object bean = instantiateBean(beanDefinition);
 		if (Objects.isNull(bean)) return null;
-
-		WBeanPostProcessor postProcessor = new WBeanPostProcessor();
-		//初始化前置调用
-		postProcessor.postProcessorBeforeInitialization(bean, beanName);
-
 		WBeanWrapper wBeanWrapper = new WBeanWrapper();
 		wBeanWrapper.setWrappedInstance(bean);
 		this.factoryBeanInstanceCache.put(beanName, wBeanWrapper);
-
-		//初始化猴子调用
-		postProcessor.postProcessorAfterInitialization(bean, beanName);
 
 		//DI的主要工作，根据类中的字段进行判断类型进行注入
 		//当前模式也就是bean在实例化后并没有进行依赖注入，只有在第一次调用时才会注入
@@ -206,7 +198,7 @@ public class WApplicationContext extends WDefaultListableBeanFactory implements 
 		Object instance = null;
 		//首先先从缓存中获取
 		if (this.factoryBeanObjectCache.containsKey(beanClassName)) {
-			return this.factoryBeanObjectCache.get(beanClassName);
+			instance = this.factoryBeanObjectCache.get(beanClassName);
 		} else {
 			//如果缓存中没有该对象那么就反射出来一个
 			Class<?> beanClass = Class.forName(beanClassName);
